@@ -1,1 +1,605 @@
-a
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bitácora Técnica Semanal</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0d1117; --bg2:#161b22; --bg3:#21262d; --line:#30363d;
+      --text:#e6edf3; --text2:#8b949e; --text3:#484f58;
+      --accent:#58a6ff; --accent-d:#1f3a5f;
+      --green:#3fb950; --green-d:#0d3320;
+      --red:#f85149; --red-d:#3d1a1a;
+      --amber:#d29922; --amber-d:#3d2f00;
+      --mono:'IBM Plex Mono',monospace; --sans:'IBM Plex Sans',sans-serif;
+      --radius:6px; --radius-lg:10px;
+    }
+    html { font-size: 15px; }
+    body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; display: flex; flex-direction: column; }
+
+    /* TOPBAR */
+    .topbar { display:flex; align-items:center; justify-content:space-between; padding:.75rem 1.5rem; border-bottom:1px solid var(--line); background:var(--bg2); position:sticky; top:0; z-index:10; }
+    .topbar-left { display:flex; align-items:center; gap:.75rem; }
+    .logo { width:32px; height:32px; background:var(--accent-d); border:1px solid var(--accent); border-radius:var(--radius); display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+    .app-name { font-size:14px; font-weight:500; letter-spacing:-.01em; }
+    .app-version { font-size:11px; color:var(--text2); font-family:var(--mono); margin-top:1px; }
+    .free-badge { display:flex; align-items:center; gap:5px; font-size:11px; font-family:var(--mono); color:var(--green); background:var(--green-d); border:1px solid #1a5c2e; border-radius:99px; padding:3px 10px; }
+    .free-dot { width:6px; height:6px; border-radius:50%; background:var(--green); }
+
+    /* BUTTONS */
+    .btn { display:inline-flex; align-items:center; gap:6px; font-family:var(--sans); font-size:13px; font-weight:500; border-radius:var(--radius); padding:6px 14px; border:1px solid transparent; cursor:pointer; transition:opacity .15s, background .15s; }
+    .btn:disabled { opacity:.35; cursor:not-allowed; }
+    .btn-primary { background:var(--accent); color:#000; border-color:var(--accent); }
+    .btn-primary:hover:not(:disabled) { opacity:.85; }
+    .btn-ghost { background:transparent; color:var(--text2); border-color:var(--line); }
+    .btn-ghost:hover:not(:disabled) { background:var(--bg3); color:var(--text); }
+    .btn-danger { background:transparent; color:var(--red); border-color:var(--red-d); }
+    .btn-danger:hover:not(:disabled) { background:var(--red-d); }
+    .btn-amber { background:transparent; color:var(--amber); border-color:var(--amber-d); }
+    .btn-amber:hover:not(:disabled) { background:var(--amber-d); }
+    .btn-sm { font-size:12px; padding:5px 10px; }
+    .btn-icon { padding:6px; border-radius:var(--radius); background:transparent; color:var(--text2); border:1px solid var(--line); cursor:pointer; display:flex; align-items:center; justify-content:center; transition:background .15s; }
+    .btn-icon:hover { background:var(--bg3); color:var(--text); }
+
+    /* LAYOUT */
+    .main { display:flex; flex:1; overflow:hidden; }
+    .sidebar { width:220px; flex-shrink:0; background:var(--bg2); border-right:1px solid var(--line); padding:1rem .75rem; display:flex; flex-direction:column; gap:.25rem; }
+    .nav-item { display:flex; align-items:center; gap:9px; padding:7px 10px; border-radius:var(--radius); font-size:13px; color:var(--text2); cursor:pointer; transition:background .15s, color .15s; border:none; background:transparent; width:100%; text-align:left; font-family:var(--sans); }
+    .nav-item:hover { background:var(--bg3); color:var(--text); }
+    .nav-item.active { background:var(--accent-d); color:var(--accent); }
+    .nav-item svg { flex-shrink:0; opacity:.7; }
+    .nav-item.active svg { opacity:1; }
+    .nav-sep { height:1px; background:var(--line); margin:.5rem 0; }
+    .nav-label { font-size:10px; font-family:var(--mono); color:var(--text3); text-transform:uppercase; letter-spacing:.08em; padding:4px 10px; }
+    .content { flex:1; overflow-y:auto; padding:2rem; }
+
+    /* PANELS */
+    .panel { display:none; max-width:760px; margin:0 auto; }
+    .panel.active { display:block; }
+    .panel-title { font-size:18px; font-weight:500; margin-bottom:.25rem; display:flex; align-items:center; gap:10px; }
+    .panel-sub { font-size:13px; color:var(--text2); margin-bottom:1.75rem; }
+
+    /* CARD */
+    .card { background:var(--bg2); border:1px solid var(--line); border-radius:var(--radius-lg); padding:1.25rem; margin-bottom:1rem; }
+    .card-title { font-size:11px; font-family:var(--mono); font-weight:500; text-transform:uppercase; letter-spacing:.08em; color:var(--text2); margin-bottom:1rem; padding-bottom:.75rem; border-bottom:1px solid var(--line); display:flex; align-items:center; justify-content:space-between; }
+
+    /* FORM */
+    .field { display:flex; flex-direction:column; gap:5px; margin-bottom:.9rem; }
+    .field:last-child { margin-bottom:0; }
+    .field label { font-size:11px; font-family:var(--mono); font-weight:500; color:var(--text2); text-transform:uppercase; letter-spacing:.06em; }
+    .field input, .field textarea, .field select { font-family:var(--sans); font-size:14px; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:8px 12px; outline:none; transition:border-color .15s; }
+    .field input:focus, .field textarea:focus, .field select:focus { border-color:var(--accent); }
+    .field input::placeholder, .field textarea::placeholder { color:var(--text3); }
+    .field textarea { resize:vertical; min-height:80px; line-height:1.6; }
+    .form-row { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+
+    /* TASK LIST */
+    .list-hdr { display:flex; align-items:center; justify-content:space-between; margin-bottom:.75rem; }
+    .list-hdr-left { display:flex; align-items:center; gap:8px; font-size:11px; font-family:var(--mono); text-transform:uppercase; letter-spacing:.08em; color:var(--text2); }
+    .pill { background:var(--accent-d); color:var(--accent); font-size:11px; font-family:var(--mono); padding:1px 8px; border-radius:99px; }
+    .pill-green { background:var(--green-d); color:var(--green); }
+
+    .task-card { background:var(--bg2); border:1px solid var(--line); border-radius:var(--radius-lg); padding:.9rem 1.1rem; margin-bottom:8px; display:grid; grid-template-columns:28px 1fr auto; gap:12px; align-items:start; animation:slideIn .2s ease; }
+    @keyframes slideIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:none} }
+    .task-num { font-size:11px; font-family:var(--mono); color:var(--text3); padding-top:2px; text-align:right; }
+    .task-desc { font-size:14px; line-height:1.55; margin-bottom:7px; }
+    .chips { display:flex; flex-wrap:wrap; gap:5px; }
+    .chip { display:inline-flex; align-items:center; gap:5px; font-size:11px; font-family:var(--mono); padding:2px 9px; border-radius:5px; }
+    .chip-date { background:var(--bg3); color:var(--text2); border:1px solid var(--line); }
+    .chip-lugar { background:var(--accent-d); color:var(--accent); border:1px solid #1f3a5f; }
+
+    .empty-state { text-align:center; padding:3rem 1rem; color:var(--text3); font-size:13px; line-height:2; border:1px dashed var(--line); border-radius:var(--radius-lg); }
+
+    /* INFORME */
+    .output-box { background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:1.25rem; font-size:13px; font-family:var(--mono); line-height:1.9; white-space:pre-wrap; color:var(--text2); min-height:120px; margin-bottom:10px; }
+    .output-actions { display:flex; gap:8px; flex-wrap:wrap; align-items:center; }
+    .email-group { display:flex; gap:6px; flex:1; min-width:200px; }
+    .email-group input { flex:1; font-family:var(--sans); font-size:13px; color:var(--text); background:var(--bg); border:1px solid var(--line); border-radius:var(--radius); padding:7px 10px; outline:none; transition:border-color .15s; }
+    .email-group input:focus { border-color:var(--accent); }
+
+    /* PRINT */
+    @media print {
+      .topbar, .sidebar, .mobile-nav, .output-actions, .btn, .list-hdr button { display:none !important; }
+      body { background:white; color:black; }
+      .output-box { border:none; color:black; font-size:12px; line-height:1.8; }
+      .content { padding:0; }
+      .card { border:none; background:white; }
+    }
+
+    /* ALERT */
+    .alert { position:fixed; bottom:1.5rem; right:1.5rem; background:var(--bg2); border:1px solid var(--line); border-radius:var(--radius); padding:10px 16px; font-size:13px; display:flex; align-items:center; gap:8px; z-index:200; transform:translateY(10px); opacity:0; transition:transform .2s, opacity .2s; max-width:320px; }
+    .alert.show { transform:none; opacity:1; }
+    .alert-dot { width:8px; height:8px; border-radius:50%; flex-shrink:0; }
+    .alert-green .alert-dot { background:var(--green); }
+    .alert-red .alert-dot { background:var(--red); }
+    .alert-amber .alert-dot { background:var(--amber); }
+
+    /* MOBILE */
+    @media (max-width:640px) {
+      .sidebar { display:none; }
+      .content { padding:1rem; }
+      .form-row { grid-template-columns:1fr; }
+      .task-card { grid-template-columns:20px 1fr auto; gap:8px; }
+      .topbar { padding:.6rem 1rem; }
+      .app-version { display:none; }
+      .mobile-nav { display:flex !important; position:fixed; bottom:0; left:0; right:0; background:var(--bg2); border-top:1px solid var(--line); z-index:10; }
+      .mobile-nav-item { flex:1; display:flex; flex-direction:column; align-items:center; padding:10px 4px 12px; font-size:10px; color:var(--text2); cursor:pointer; border:none; background:transparent; font-family:var(--sans); gap:4px; transition:color .15s; }
+      .mobile-nav-item.active { color:var(--accent); }
+      .content { padding-bottom:5rem; }
+    }
+    .mobile-nav { display:none; }
+  </style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <div class="logo">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="5.5" width="12" height="2" rx="1" fill="#58a6ff"/>
+        <rect x="2" y="9.5" width="8" height="2" rx="1" fill="#58a6ff" opacity=".5"/>
+        <rect x="5" y="2" width="2" height="3" rx="1" fill="#58a6ff" opacity=".4"/>
+        <rect x="9" y="2" width="2" height="3" rx="1" fill="#58a6ff" opacity=".4"/>
+      </svg>
+    </div>
+    <div>
+      <div class="app-name">Bitácora Técnica Semanal</div>
+      <div class="app-version">v1.0 · 100% offline · sin costo</div>
+    </div>
+  </div>
+  <div class="free-badge"><span class="free-dot"></span>gratuito</div>
+</header>
+
+<div class="main">
+  <nav class="sidebar">
+    <div class="nav-label">Menú</div>
+    <button class="nav-item active" onclick="showPanel('tareas')" id="nav-tareas">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      Registrar tareas
+    </button>
+    <button class="nav-item" onclick="showPanel('informe')" id="nav-informe">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/></svg>
+      Generar informe
+    </button>
+    <div class="nav-sep"></div>
+    <div class="nav-label">Datos</div>
+    <button class="nav-item" onclick="exportarJSON()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Exportar tareas
+    </button>
+    <button class="nav-item" onclick="document.getElementById('file-import').click()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+      Importar tareas
+    </button>
+    <input type="file" id="file-import" accept=".json" style="display:none" onchange="importarJSON(event)" />
+    <div class="nav-sep"></div>
+    <button class="nav-item" onclick="showPanel('config')" id="nav-config">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      Configuración
+    </button>
+  </nav>
+
+  <main class="content">
+
+    <!-- PANEL TAREAS -->
+    <section class="panel active" id="panel-tareas">
+      <div class="panel-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+        Registrar tareas
+      </div>
+      <div class="panel-sub">Cargá cada intervención durante la semana. Las tareas se guardan automáticamente en tu navegador.</div>
+
+      <div class="card">
+        <div class="card-title">Nueva tarea</div>
+        <div class="field">
+          <label>Descripción de la tarea</label>
+          <textarea id="inp-desc" placeholder="Ej: reemplacé el capacitor quemado de la fuente switching 24V, placa con daño por sobretensión…" rows="3"></textarea>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Fecha y hora</label>
+            <input type="datetime-local" id="inp-fecha" />
+          </div>
+          <div class="field">
+            <label>Lugar / equipo intervenido</label>
+            <input type="text" id="inp-lugar" placeholder="Ej: Tablero TB-03 — Planta A" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="agregarTarea()">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><line x1="7" y1="1" x2="7" y2="13" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><line x1="1" y1="7" x2="13" y2="7" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Agregar tarea
+        </button>
+      </div>
+
+      <div class="list-hdr">
+        <div class="list-hdr-left">Tareas esta semana <span class="pill" id="task-count">0</span></div>
+        <button class="btn btn-danger btn-sm" id="btn-borrar-todas" onclick="borrarTodas()" style="display:none;">Borrar todas</button>
+      </div>
+      <div id="task-list"></div>
+    </section>
+
+    <!-- PANEL INFORME -->
+    <section class="panel" id="panel-informe">
+      <div class="panel-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        Generar informe semanal
+      </div>
+      <div class="panel-sub">El informe se genera localmente con tus tareas, sin internet ni IA. Podés copiarlo, imprimirlo o enviarlo por email.</div>
+
+      <div class="card">
+        <div class="card-title">Datos del informe</div>
+        <div class="form-row">
+          <div class="field">
+            <label>Tu nombre completo</label>
+            <input type="text" id="inp-nombre" placeholder="Juan Pérez" />
+          </div>
+          <div class="field">
+            <label>Empresa / área</label>
+            <input type="text" id="inp-empresa" placeholder="Mantenimiento eléctrico" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Semana del informe</label>
+            <input type="week" id="inp-semana" />
+          </div>
+          <div class="field">
+            <label>Destinatario</label>
+            <input type="text" id="inp-jefe" placeholder="Ing. García" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="generarInforme()">
+          <svg width="13" height="13" viewBox="0 0 14 14" fill="none"><path d="M2 7h10M8 3l4 4-4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Generar informe
+        </button>
+      </div>
+
+      <div id="informe-container" style="display:none;">
+        <div class="card">
+          <div class="card-title">
+            Informe generado
+            <span class="pill pill-green">listo</span>
+          </div>
+          <div class="output-box" id="informe-output"></div>
+          <div class="output-actions">
+            <button class="btn btn-ghost" onclick="copiarInforme()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+              Copiar texto
+            </button>
+            <button class="btn btn-ghost" onclick="window.print()">
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+              Imprimir / PDF
+            </button>
+            <div class="email-group">
+              <input type="email" id="inp-email" placeholder="email del destinatario" />
+              <button class="btn btn-primary" onclick="enviarEmail()">Enviar email</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- PANEL CONFIG -->
+    <section class="panel" id="panel-config">
+      <div class="panel-title">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        Configuración
+      </div>
+      <div class="panel-sub">Datos personales guardados localmente. Se autocompletan en cada informe.</div>
+      <div class="card">
+        <div class="card-title">Tus datos</div>
+        <div class="form-row">
+          <div class="field">
+            <label>Tu nombre completo</label>
+            <input type="text" id="cfg-nombre" placeholder="Juan Pérez" />
+          </div>
+          <div class="field">
+            <label>Empresa / área</label>
+            <input type="text" id="cfg-empresa" placeholder="Mantenimiento eléctrico" />
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="field">
+            <label>Destinatario habitual</label>
+            <input type="text" id="cfg-jefe" placeholder="Ing. García" />
+          </div>
+          <div class="field">
+            <label>Email del destinatario</label>
+            <input type="email" id="cfg-email" placeholder="jefe@empresa.com" />
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="guardarConfig()">Guardar datos</button>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Acerca de esta app</div>
+        <p style="font-size:13px;color:var(--text2);line-height:1.8;">
+          Bitácora Técnica Semanal — versión gratuita y offline.<br>
+          Todos los datos se guardan en tu navegador (<code style="font-family:var(--mono);font-size:12px;color:var(--accent);">localStorage</code>).<br>
+          No requiere internet, no envía datos a ningún servidor.<br>
+          Podés hacer una copia de seguridad usando <strong>Exportar tareas</strong>.
+        </p>
+      </div>
+    </section>
+
+  </main>
+</div>
+
+<!-- MOBILE NAV -->
+<nav class="mobile-nav">
+  <button class="mobile-nav-item active" onclick="showPanel('tareas')" id="mnav-tareas">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    Tareas
+  </button>
+  <button class="mobile-nav-item" onclick="showPanel('informe')" id="mnav-informe">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Informe
+  </button>
+  <button class="mobile-nav-item" onclick="exportarJSON()">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+    Exportar
+  </button>
+  <button class="mobile-nav-item" onclick="showPanel('config')" id="mnav-config">
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06-.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+    Config
+  </button>
+</nav>
+
+<!-- ALERT -->
+<div class="alert" id="alert">
+  <span class="alert-dot"></span>
+  <span id="alert-msg"></span>
+</div>
+
+<script>
+const SK = 'bitacora_v1';
+const SK_CFG = 'bitacora_cfg_v1';
+let tareas = [];
+let alertTimer = null;
+
+// ── STORAGE ──
+function load() {
+  try { const r = localStorage.getItem(SK); if(r) tareas = JSON.parse(r); } catch(e) { tareas = []; }
+}
+function save() {
+  try { localStorage.setItem(SK, JSON.stringify(tareas)); } catch(e) {}
+}
+function loadCfg() {
+  try {
+    const c = JSON.parse(localStorage.getItem(SK_CFG) || '{}');
+    if(c.nombre) { document.getElementById('cfg-nombre').value = c.nombre; document.getElementById('inp-nombre').value = c.nombre; }
+    if(c.empresa) { document.getElementById('cfg-empresa').value = c.empresa; document.getElementById('inp-empresa').value = c.empresa; }
+    if(c.jefe) { document.getElementById('cfg-jefe').value = c.jefe; document.getElementById('inp-jefe').value = c.jefe; }
+    if(c.email) { document.getElementById('cfg-email').value = c.email; document.getElementById('inp-email').value = c.email; }
+  } catch(e) {}
+}
+function guardarConfig() {
+  const c = {
+    nombre: document.getElementById('cfg-nombre').value.trim(),
+    empresa: document.getElementById('cfg-empresa').value.trim(),
+    jefe: document.getElementById('cfg-jefe').value.trim(),
+    email: document.getElementById('cfg-email').value.trim()
+  };
+  localStorage.setItem(SK_CFG, JSON.stringify(c));
+  document.getElementById('inp-nombre').value = c.nombre;
+  document.getElementById('inp-empresa').value = c.empresa;
+  document.getElementById('inp-jefe').value = c.jefe;
+  document.getElementById('inp-email').value = c.email;
+  showAlert('Datos guardados correctamente');
+}
+
+// ── ALERT ──
+function showAlert(msg, type='green') {
+  const el = document.getElementById('alert');
+  el.className = 'alert alert-' + type;
+  document.getElementById('alert-msg').textContent = msg;
+  el.classList.add('show');
+  clearTimeout(alertTimer);
+  alertTimer = setTimeout(() => el.classList.remove('show'), 2800);
+}
+
+// ── PANELS ──
+function showPanel(name) {
+  document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + name).classList.add('active');
+  ['tareas','informe','config'].forEach(n => {
+    const s = document.getElementById('nav-' + n);
+    const m = document.getElementById('mnav-' + n);
+    if(s) s.classList.toggle('active', n === name);
+    if(m) m.classList.toggle('active', n === name);
+  });
+}
+
+// ── FORMAT ──
+function fmt(dt) {
+  if(!dt) return '';
+  return new Date(dt).toLocaleString('es-AR', {weekday:'long', day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+function fmtCorto(dt) {
+  if(!dt) return '';
+  return new Date(dt).toLocaleString('es-AR', {day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit'});
+}
+
+// ── RENDER ──
+function render() {
+  const n = tareas.length;
+  document.getElementById('task-count').textContent = n;
+  document.getElementById('btn-borrar-todas').style.display = n ? 'inline-flex' : 'none';
+  const list = document.getElementById('task-list');
+  if(!n) {
+    list.innerHTML = `<div class="empty-state"><div style="font-size:26px;opacity:.3;margin-bottom:10px;">◻</div>Sin tareas registradas esta semana.<br>Cargá la primera intervención del día arriba.</div>`;
+    return;
+  }
+  list.innerHTML = tareas.map((t, i) => `
+    <div class="task-card">
+      <div class="task-num">#${String(i+1).padStart(2,'0')}</div>
+      <div>
+        <div class="task-desc">${t.desc}</div>
+        <div class="chips">
+          ${t.fecha ? `<span class="chip chip-date">${fmtCorto(t.fecha)}</span>` : ''}
+          ${t.lugar ? `<span class="chip chip-lugar">${t.lugar}</span>` : ''}
+        </div>
+      </div>
+      <button class="btn btn-ghost btn-sm" onclick="borrar(${i})" style="color:var(--red);border-color:var(--red-d);">Eliminar</button>
+    </div>
+  `).join('');
+}
+
+// ── CRUD ──
+function agregarTarea() {
+  const desc = document.getElementById('inp-desc').value.trim();
+  const fecha = document.getElementById('inp-fecha').value;
+  const lugar = document.getElementById('inp-lugar').value.trim();
+  if(!desc) { showAlert('Ingresá una descripción', 'red'); return; }
+  tareas.push({ desc, fecha, lugar, id: Date.now() });
+  save();
+  document.getElementById('inp-desc').value = '';
+  document.getElementById('inp-lugar').value = '';
+  render();
+  showAlert('Tarea registrada');
+  // Actualizar fecha/hora al ahora
+  setFechaHora();
+}
+function borrar(i) {
+  if(!confirm('¿Eliminar esta tarea?')) return;
+  tareas.splice(i, 1); save(); render();
+}
+function borrarTodas() {
+  if(!confirm('¿Borrar TODAS las tareas de la semana?')) return;
+  tareas = []; save(); render();
+  document.getElementById('informe-container').style.display = 'none';
+}
+
+// ── INFORME LOCAL (sin IA) ──
+function generarInforme() {
+  if(!tareas.length) { showAlert('No hay tareas registradas', 'red'); return; }
+  const nombre = document.getElementById('inp-nombre').value.trim() || 'Técnico';
+  const empresa = document.getElementById('inp-empresa').value.trim() || '';
+  const semana  = document.getElementById('inp-semana').value || '';
+  const jefe    = document.getElementById('inp-jefe').value.trim() || 'Supervisor';
+
+  // Parsear semana
+  let periodoStr = semana;
+  if(semana && semana.includes('-W')) {
+    const [y, w] = semana.split('-W');
+    const d = new Date(y, 0, 1 + (w-1)*7);
+    const fin = new Date(d); fin.setDate(d.getDate() + 6);
+    periodoStr = `${d.toLocaleDateString('es-AR')} al ${fin.toLocaleDateString('es-AR')}`;
+  }
+
+  const hoy = new Date().toLocaleDateString('es-AR', {day:'2-digit',month:'2-digit',year:'numeric'});
+
+  let txt = '';
+  txt += `════════════════════════════════════════════════════════\n`;
+  txt += `         INFORME TÉCNICO SEMANAL DE ACTIVIDADES\n`;
+  txt += `════════════════════════════════════════════════════════\n\n`;
+  txt += `Técnico responsable : ${nombre}\n`;
+  if(empresa) txt += `Empresa / Área       : ${empresa}\n`;
+  txt += `Período cubierto     : ${periodoStr}\n`;
+  txt += `Destinatario         : ${jefe}\n`;
+  txt += `Fecha de emisión     : ${hoy}\n`;
+  txt += `\n────────────────────────────────────────────────────────\n`;
+  txt += `                  DETALLE DE ACTIVIDADES\n`;
+  txt += `────────────────────────────────────────────────────────\n\n`;
+
+  tareas.forEach((t, i) => {
+    txt += `Actividad N.° ${String(i+1).padStart(2,'0')}\n`;
+    txt += `  Descripción  : ${t.desc}\n`;
+    if(t.fecha) txt += `  Fecha / Hora  : ${fmt(t.fecha)}\n`;
+    if(t.lugar) txt += `  Equipo / Lugar: ${t.lugar}\n`;
+    txt += `\n`;
+  });
+
+  txt += `────────────────────────────────────────────────────────\n`;
+  txt += `                        RESUMEN\n`;
+  txt += `────────────────────────────────────────────────────────\n\n`;
+  txt += `Durante el período comprendido entre ${periodoStr}, el técnico ${nombre} `;
+  txt += `llevó a cabo un total de ${tareas.length} intervención${tareas.length !== 1 ? 'es' : ''} técnica${tareas.length !== 1 ? 's' : ''}`;
+  if(empresa) txt += ` en el área de ${empresa}`;
+  txt += `.\n\n`;
+
+  const lugares = [...new Set(tareas.filter(t=>t.lugar).map(t=>t.lugar))];
+  if(lugares.length) {
+    txt += `Equipos / Lugares intervenidos:\n`;
+    lugares.forEach(l => { txt += `  • ${l}\n`; });
+    txt += `\n`;
+  }
+
+  txt += `Se deja constancia del presente informe para conocimiento\n`;
+  txt += `y archivo del área correspondiente.\n\n`;
+  txt += `\n\n_____________________________\n`;
+  txt += `${nombre}\n`;
+  if(empresa) txt += `${empresa}\n`;
+  txt += `Fecha: ${hoy}\n`;
+  txt += `════════════════════════════════════════════════════════\n`;
+
+  document.getElementById('informe-output').textContent = txt;
+  document.getElementById('informe-container').style.display = 'block';
+  showAlert('Informe generado');
+}
+
+function copiarInforme() {
+  navigator.clipboard.writeText(document.getElementById('informe-output').textContent)
+    .then(() => showAlert('Copiado al portapapeles'));
+}
+function enviarEmail() {
+  const email = document.getElementById('inp-email').value.trim();
+  const t = document.getElementById('informe-output').textContent;
+  if(!email) { showAlert('Ingresá el email', 'red'); return; }
+  window.open(`mailto:${email}?subject=${encodeURIComponent('Informe técnico semanal')}&body=${encodeURIComponent(t)}`);
+}
+
+// ── EXPORT / IMPORT ──
+function exportarJSON() {
+  if(!tareas.length) { showAlert('No hay tareas para exportar', 'red'); return; }
+  const data = JSON.stringify({ exportado: new Date().toISOString(), tareas }, null, 2);
+  const a = document.createElement('a');
+  a.href = 'data:application/json,' + encodeURIComponent(data);
+  a.download = 'tareas_' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+  showAlert('Tareas exportadas como .json');
+}
+function importarJSON(e) {
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ev => {
+    try {
+      const d = JSON.parse(ev.target.result);
+      const nuevas = d.tareas || d;
+      if(!Array.isArray(nuevas)) throw new Error();
+      const modo = confirm(`Se encontraron ${nuevas.length} tarea(s).\n\nOK = agregar a las existentes\nCancelar = reemplazar todo`);
+      tareas = modo ? [...tareas, ...nuevas] : nuevas;
+      save(); render();
+      showAlert(`${nuevas.length} tarea(s) importada(s)`);
+    } catch { showAlert('Archivo inválido', 'red'); }
+    e.target.value = '';
+  };
+  reader.readAsText(file);
+}
+
+// ── INIT ──
+function setFechaHora() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  document.getElementById('inp-fecha').value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
+}
+function setSemana() {
+  const now = new Date();
+  const pad = n => String(n).padStart(2,'0');
+  const start = new Date(now.getFullYear(), 0, 1);
+  const wk = Math.ceil(((now - start) / 86400000 + start.getDay() + 1) / 7);
+  document.getElementById('inp-semana').value = `${now.getFullYear()}-W${pad(wk)}`;
+}
+
+load();
+loadCfg();
+render();
+setFechaHora();
+setSemana();
+</script>
+</body>
+</html>
