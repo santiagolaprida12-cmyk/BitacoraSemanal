@@ -497,19 +497,19 @@ function generarInforme() {
   txt += `════════════════════════════════════════════════════════\n`;
   txt += `         INFORME TÉCNICO SEMANAL DE ACTIVIDADES\n`;
   txt += `════════════════════════════════════════════════════════\n\n`;
-  txt += `Técnico responsable : ${nombre}\n`;
-  if(empresa) txt += `Empresa / Área       : ${empresa}\n`;
-  txt += `Período cubierto     : ${periodoStr}\n`;
-  txt += `Destinatario         : ${jefe}\n`;
-  txt += `Fecha de emisión     : ${hoy}\n`;
+  txt += `Técnico responsable: ${nombre}\n`;
+  if(empresa) txt += `Empresa / Área    : ${empresa}\n`;
+  txt += `Período cubierto: ${periodoStr}\n`;
+  txt += `Destinatario: ${jefe}\n`;
+  txt += `Fecha de emisión: ${hoy}\n`;
   txt += `\n────────────────────────────────────────────────────────\n`;
   txt += `                  DETALLE DE ACTIVIDADES\n`;
   txt += `────────────────────────────────────────────────────────\n\n`;
 
   tareas.forEach((t, i) => {
     txt += `Actividad N.° ${String(i+1).padStart(2,'0')}\n`;
-    txt += `  Descripción  : ${t.desc}\n`;
-    if(t.fecha) txt += `  Fecha / Hora  : ${fmt(t.fecha)}\n`;
+    txt += `  Descripción: ${t.desc}\n`;
+    if(t.fecha) txt += `  Fecha / Hora: ${fmt(t.fecha)}\n`;
     if(t.lugar) txt += `  Equipo / Lugar: ${t.lugar}\n`;
     txt += `\n`;
   });
@@ -518,7 +518,7 @@ function generarInforme() {
   txt += `                        RESUMEN\n`;
   txt += `────────────────────────────────────────────────────────\n\n`;
   txt += `Durante el período comprendido entre ${periodoStr}, el técnico ${nombre} `;
-  txt += `llevó a cabo un total de ${tareas.length} intervención${tareas.length !== 1 ? 'es' : ''} técnica${tareas.length !== 1 ? 's' : ''}`;
+  txt += `llevó a cabo un total de ${tareas.length} intervencion${tareas.length !== 1 ? 'es' : ''} técnica${tareas.length !== 1 ? 's' : ''}`;
   if(empresa) txt += ` en el área de ${empresa}`;
   txt += `.\n\n`;
 
